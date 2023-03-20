@@ -73,8 +73,10 @@ public class JSONFormatter extends Formatter {
 		LogManager manager = LogManager.getLogManager();
 		String cname = getClass().getName();
 
-		String value = manager.getProperty(cname + ".use_slf4j_level_names");
-		useSlf4jLevelNames = Boolean.valueOf(value);
+		//String value = manager.getProperty(cname + ".use_slf4j_level_names");
+		String value = manager.getProperty(cname + ".use_jul_level_names");
+		//useSlf4jLevelNames = Boolean.valueOf(value);
+		useSlf4jLevelNames = !(Boolean.valueOf(value));
 
 		value = manager.getProperty(cname + ".key_timestamp");
 		timestampKey = (value != null) ? value: KEY_TIMESTAMP;
@@ -113,30 +115,32 @@ public class JSONFormatter extends Formatter {
 		}
 		object.put(threadNameKey, getThreadName(record.getThreadID()));
 
-		if (null != record.getSourceClassName()) {
-			object.put(loggerClassKey, record.getSourceClassName());
-		}
-
-		if (null != record.getSourceMethodName()) {
-			object.put(loggerMethodKey, record.getSourceMethodName());
-		}
+		// Don't log class or method
+		//if (null != record.getSourceClassName()) {
+		//	object.put(loggerClassKey, record.getSourceClassName());
+		//}
+		//
+		//if (null != record.getSourceMethodName()) {
+		//	object.put(loggerMethodKey, record.getSourceMethodName());
+		//}
 		object.put(messageKey, formatMessage(record));
 
 		// Used an enum map for lighter memory consumption
 		if (null != record.getThrown()) {
-			Map<ExceptionKeys, Object> exceptionInfo = new EnumMap<>(ExceptionKeys.class);
-			exceptionInfo.put(ExceptionKeys.exception_class, record.getThrown().getClass().getName());
+			//Map<ExceptionKeys, Object> exceptionInfo = new EnumMap<>(ExceptionKeys.class);
+			//exceptionInfo.put(ExceptionKeys.exception_class, record.getThrown().getClass().getName());
 
-			if (record.getThrown().getMessage() != null) {
-				exceptionInfo.put(ExceptionKeys.exception_message, record.getThrown().getMessage());
-			}
+			//if (record.getThrown().getMessage() != null) {
+			//	exceptionInfo.put(ExceptionKeys.exception_message, record.getThrown().getMessage());
+			//}
 
 			StringWriter sw = new StringWriter();
 			PrintWriter pw = new PrintWriter(sw);
 			record.getThrown().printStackTrace(pw);
 			pw.close();
-			exceptionInfo.put(ExceptionKeys.stack_trace, sw.toString());
-			object.put(exceptionKey, exceptionInfo);
+			//exceptionInfo.put(ExceptionKeys.stack_trace, sw.toString());
+			//object.put(exceptionKey, exceptionInfo);
+			object.put(ExceptionKeys.stack_trace.name(), sw.toString());
 		}
 
 		return CONVERTER.convertToJson(object);
